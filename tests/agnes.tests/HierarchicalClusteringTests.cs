@@ -88,6 +88,14 @@ namespace agnes.tests
                 ToResultsSet(new[] {500, 603}, new[] {5, 4}, new[] {5000})
             };
 
+
+            yield return new object[]
+            {
+                ToTestList(5, 500, 501, 430, 4, 603, 5000),
+                200,
+                ToResultsSet(new[] {500, 603, 501, 430}, new[] {5, 4}, new[] {5000})
+            };
+
             yield return new object[]
             {
                 ToTestList(1, 2, 3, 4, 5, 6, 7),

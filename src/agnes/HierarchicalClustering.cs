@@ -37,7 +37,7 @@ namespace agnes
                 // 3. merge the 2 clusters, remove the two merged clusters from the list and append the merged cluster
                 clusters = clusters
                     .Where(c => !minClusterPair.ImmediatelyContains(c))
-                    .Concat(new List<Cluster<T>>{minClusterPair})
+                    .Append(minClusterPair)
                     .ToArray();
 
                 // 4. repeat until all clusters are merged (one cluster left in the list, with left and right nodes)
