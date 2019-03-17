@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using agnes.ClusterSet;
 using Shouldly;
 using Xunit;
@@ -20,7 +18,7 @@ namespace agnes.tests
         }
     }
 
-    internal sealed class SortedClusterResultTestData : IEnumerable<object[]>
+    public sealed class SortedClusterResultTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {

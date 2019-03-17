@@ -5,13 +5,13 @@ using System.Linq;
 namespace agnes.ClusterSet
 {
     public class InstanceInClusterGroupComparer<T> : IComparer<T>
-        where T : IComparable<T>, IEquatable<T>
+        where T : IEquatable<T>
     {
-        private readonly SortedClusterResult<T> _clusters;
+        private readonly IEnumerable<ClusterGroup<T>> _clusters;
 
-        public InstanceInClusterGroupComparer(SortedClusterResult<T> clusters)
+        public InstanceInClusterGroupComparer(IEnumerable<ClusterGroup<T>> clusters)
         {
-            _clusters = clusters;
+            _clusters = clusters.ToList();
         }
 
         public int Compare(T x, T y)

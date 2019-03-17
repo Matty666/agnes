@@ -7,11 +7,11 @@ namespace agnes.ClusterSet
 {
     public class SortedClusterResult<T> : IEnumerable<ClusterGroup<T>>
     {
-        private readonly ISet<ClusterGroup<T>> _clusterGroups = new SortedSet<ClusterGroup<T>>(ClusterGroupComparer<T>.Instance);
+        private readonly ISet<ClusterGroup<T>> _clusterGroups;
 
         public SortedClusterResult(IEnumerable<ISet<T>> clusteredInstances, Func<ISet<T>, int> sortingKeyFunction)
         {
-            _clusterGroups.UnionWith(clusteredInstances.Select(c => new ClusterGroup<T>(c, sortingKeyFunction(c))));
+            _clusterGroups = new SortedSet<ClusterGroup<T>>(clusteredInstances.Select(c => new ClusterGroup<T>(c, sortingKeyFunction(c))));
         }
 
         public IEnumerator<ClusterGroup<T>> GetEnumerator()
