@@ -18,7 +18,7 @@ namespace agnes.tests
         }
     }
 
-    public sealed class SortedClusterResultTestData : IEnumerable<object[]>
+    public class SortedClusterResultTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {
