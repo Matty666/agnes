@@ -20,7 +20,7 @@ namespace agnes.tests
         [Fact]
         public void NullListShouldReturnEmptyCluster()
         {
-            _subject.Cluster((IEnumerable<TestClusterCandidate>)null).Contents.ShouldBeEmpty();
+            _subject.Cluster(null).Contents.ShouldBeEmpty();
         }
 
         [Fact]
