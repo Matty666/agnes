@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +14,7 @@ namespace agnes.tests
 
         public HierarchicalClusteringTests()
         {
-            var linkage = LinkageFunctions.CompleteLinkage<TestClusterCandidate>((i1, i2) => i1.GetDistanceBetween(i2));
-
-            _subject = new HierarchicalClustering<TestClusterCandidate>(linkage);
+            _subject = new HierarchicalClustering<TestClusterCandidate>(TestClusterCandidate.CompleteLinkage);
         }
 
         [Fact]
@@ -48,9 +47,12 @@ namespace agnes.tests
 
         [Theory]
         [ClassData(typeof(ClusteringTestData))]
-        public void Clusters(List<TestClusterCandidate> candidates, double cutPoint, ISet<ISet<TestClusterCandidate>> expectedClusterResults)
+        public void Clusters(List<TestClusterCandidate> candidates, double cutPoint,
+            Func<Cluster<TestClusterCandidate>, Cluster<TestClusterCandidate>, double> linkageFunction,
+            ISet<ISet<TestClusterCandidate>> expectedClusterResults)
         {
-            var results = _subject.Cluster(candidates);
+            var subject = new HierarchicalClustering<TestClusterCandidate>(linkageFunction);
+            var results = subject.Cluster(candidates);
             var clustered = results.GetClusteredInstances(d => d > cutPoint);
             clustered.Count.ShouldBe(expectedClusterResults.Count);
 
@@ -59,18 +61,18 @@ namespace agnes.tests
 
             count.ShouldBe(expectedClusterResults.Count);
         }
-
-
     }
 
     public class ClusteringTestData : IEnumerable<object[]>
     {
+
         public IEnumerator<object[]> GetEnumerator()
         {
             yield return new object[]
             {
                 TestClusterCandidate.ToTestList(10, 20, 499, 501, 700, 710),
                 200,
+                TestClusterCandidate.CompleteLinkage,
                 TestClusterCandidate.ToClusterSets(new[] {10, 20}, new[] {499, 501}, new[] {700, 710})
             };
 
@@ -78,6 +80,7 @@ namespace agnes.tests
             {
                 TestClusterCandidate.ToTestList(5, 500, 4, 603),
                 200,
+                TestClusterCandidate.CompleteLinkage,
                 TestClusterCandidate.ToClusterSets(new[] {500, 603}, new[] {5, 4})
             };
 
@@ -85,6 +88,7 @@ namespace agnes.tests
             {
                 TestClusterCandidate.ToTestList(5, 500, 4, 603, 5000),
                 200,
+                TestClusterCandidate.CompleteLinkage,
                 TestClusterCandidate.ToClusterSets(new[] {500, 603}, new[] {5, 4}, new[] {5000})
             };
 
@@ -92,6 +96,7 @@ namespace agnes.tests
             {
                 TestClusterCandidate.ToTestList(5, 500, 501, 430, 4, 603, 5000),
                 200,
+                TestClusterCandidate.CompleteLinkage,
                 TestClusterCandidate.ToClusterSets(new[] {500, 603, 501, 430}, new[] {5, 4}, new[] {5000})
             };
 
@@ -99,9 +104,17 @@ namespace agnes.tests
             {
                 TestClusterCandidate.ToTestList(1, 2, 3, 4, 5, 6, 7),
                 200,
+                TestClusterCandidate.CompleteLinkage,
                 TestClusterCandidate.ToClusterSets(new[] {1, 2, 3, 4, 5, 6, 7})
             };
 
+            yield return new object[]
+            {
+                TestClusterCandidate.ToTestList(10, 20, 499, 501, 700, 710),
+                200,
+                TestClusterCandidate.SingleLinkage,
+                TestClusterCandidate.ToClusterSets(new[] {10, 20}, new[] {499, 501, 700, 710})
+            };
         }
 
         IEnumerator IEnumerable.GetEnumerator()

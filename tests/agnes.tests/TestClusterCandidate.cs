@@ -1,11 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using agnes.HCA;
 
 namespace agnes.tests
 {
     public class TestClusterCandidate : IEquatable<TestClusterCandidate>, IComparable<TestClusterCandidate>
     {
+        internal static readonly Func<TestClusterCandidate, TestClusterCandidate, double> DistanceFunction =
+            (i1, i2) => i1.GetDistanceBetween(i2);
+
+        internal static readonly Func<Cluster<TestClusterCandidate>, Cluster<TestClusterCandidate>, double>
+            CompleteLinkage = LinkageFunctions.CompleteLinkage(DistanceFunction);
+
+        internal static readonly Func<Cluster<TestClusterCandidate>, Cluster<TestClusterCandidate>, double>
+            SingleLinkage = LinkageFunctions.SingleLinkage(DistanceFunction);
+
         internal static ISet<ISet<TestClusterCandidate>> ToClusterSets(params IEnumerable<int>[] values) =>
             new HashSet<ISet<TestClusterCandidate>>(values.Select(ss =>
                 new HashSet<TestClusterCandidate>(ss.Select(v => new TestClusterCandidate(v)))));
