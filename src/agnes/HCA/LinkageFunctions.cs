@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace agnes
+namespace agnes.HCA
 {
     public static class LinkageFunctions
     {

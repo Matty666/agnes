@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace agnes
+namespace agnes.Utils
 {
     public static class ReflectiveMatrix
     {

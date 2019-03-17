@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using agnes.Utils;
 
-namespace agnes
+namespace agnes.HCA
 {
     public interface IAnalyseClusters<T>
     {

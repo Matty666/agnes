@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace agnes
+namespace agnes.HCA
 {
     public class Cluster<T> : IEnumerable<T>
     {
