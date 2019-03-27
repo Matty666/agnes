@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="humanizer.core" Version="2.6.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -18,6 +19,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\agnes\agnes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData\standard.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

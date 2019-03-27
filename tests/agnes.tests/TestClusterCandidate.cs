@@ -10,11 +10,12 @@ namespace agnes.tests
         internal static readonly Func<TestClusterCandidate, TestClusterCandidate, double> DistanceFunction =
             (i1, i2) => i1.GetDistanceBetween(i2);
 
-        internal static readonly Func<Cluster<TestClusterCandidate>, Cluster<TestClusterCandidate>, double>
-            CompleteLinkage = LinkageFunctions.CompleteLinkage(DistanceFunction);
+        internal static readonly Func<double, double, double> CompleteLinkage = Math.Max;
 
-        internal static readonly Func<Cluster<TestClusterCandidate>, Cluster<TestClusterCandidate>, double>
-            SingleLinkage = LinkageFunctions.SingleLinkage(DistanceFunction);
+        internal static readonly Func<double, double, double> SingleLinkage = Math.Min;
+
+        public static Func<TestClusterCandidate, TestClusterCandidate, double> LogDistanceFunction =
+            (i1, i2) => Math.Abs(Math.Log10(i1.Value) - Math.Log10(i2.Value));
 
         internal static ISet<ISet<TestClusterCandidate>> ToClusterSets(params IEnumerable<int>[] values) =>
             new HashSet<ISet<TestClusterCandidate>>(values.Select(ss =>
@@ -61,6 +62,11 @@ namespace agnes.tests
         public override int GetHashCode()
         {
             return Value;
+        }
+
+        public override string ToString()
+        {
+            return $"Test Cluster Value: {Value}";
         }
     }
 }

@@ -13,7 +13,7 @@ namespace agnes.Utils
             {
                 if (xIndex == yIndex)
                 {
-                    sameIndexAction(xIndex, yIndex);
+                    sameIndexAction?.Invoke(xIndex, yIndex);
                     xIndex = 0;
                     yIndex += 1;
                     continue;

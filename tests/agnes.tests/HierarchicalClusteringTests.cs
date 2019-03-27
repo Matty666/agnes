@@ -14,7 +14,7 @@ namespace agnes.tests
 
         public HierarchicalClusteringTests()
         {
-            _subject = new HierarchicalClustering<TestClusterCandidate>(TestClusterCandidate.CompleteLinkage);
+            _subject = new HierarchicalClustering<TestClusterCandidate>(TestClusterCandidate.DistanceFunction, Math.Max);
         }
 
         [Fact]
@@ -48,10 +48,10 @@ namespace agnes.tests
         [Theory]
         [ClassData(typeof(ClusteringTestData))]
         public void Clusters(List<TestClusterCandidate> candidates, double cutPoint,
-            Func<Cluster<TestClusterCandidate>, Cluster<TestClusterCandidate>, double> linkageFunction,
+            Func<double, double, double> linkageFunction, Func<TestClusterCandidate, TestClusterCandidate, double> distanceFunction,
             ISet<ISet<TestClusterCandidate>> expectedClusterResults)
         {
-            var subject = new HierarchicalClustering<TestClusterCandidate>(linkageFunction);
+            var subject = new HierarchicalClustering<TestClusterCandidate>(distanceFunction, linkageFunction);
             var results = subject.Cluster(candidates);
             var clustered = results.GetClusteredInstances(d => d > cutPoint);
             clustered.Count.ShouldBe(expectedClusterResults.Count);
@@ -70,10 +70,11 @@ namespace agnes.tests
         {
             yield return new object[]
             {
-                TestClusterCandidate.ToTestList(1, 2, 3, 10, 99, 500, 1000, 5000, 9000, 9001, 9002, 9003, 9004),
-                1,
-                LinkageFunctions.CompleteLinkage((TestClusterCandidate i1, TestClusterCandidate i2) => Math.Abs(Math.Log10(i1.Value) - Math.Log10(i2.Value))),
-                TestClusterCandidate.ToClusterSets(new[] {1, 2, 3}, new[] {10, 99}, new[] {500, 1000}, new[] {5000, 9000, 9001, 9002, 9003, 9004})
+                TestClusterCandidate.ToTestList(700, 499, 20, 501, 10, 710),
+                200,
+                TestClusterCandidate.SingleLinkage,
+                TestClusterCandidate.DistanceFunction,
+                TestClusterCandidate.ToClusterSets(new[] {10, 20}, new[] {499, 501, 700, 710})
             };
 
             yield return new object[]
@@ -81,7 +82,17 @@ namespace agnes.tests
                 TestClusterCandidate.ToTestList(10, 20, 499, 501, 700, 710),
                 200,
                 TestClusterCandidate.CompleteLinkage,
+                TestClusterCandidate.DistanceFunction,
                 TestClusterCandidate.ToClusterSets(new[] {10, 20}, new[] {499, 501}, new[] {700, 710})
+            };
+
+            yield return new object[]
+            {
+                TestClusterCandidate.ToTestList(1, 2, 3, 10, 99, 500, 1000, 5000, 9000, 9001, 9002, 9003, 9004),
+                1,
+                TestClusterCandidate.CompleteLinkage,
+                TestClusterCandidate.LogDistanceFunction,
+                TestClusterCandidate.ToClusterSets(new[] {1, 2, 3}, new[] {10, 99}, new[] {500, 1000}, new[] {5000, 9000, 9001, 9002, 9003, 9004})
             };
 
             yield return new object[]
@@ -89,6 +100,7 @@ namespace agnes.tests
                 TestClusterCandidate.ToTestList(5, 500, 4, 603),
                 200,
                 TestClusterCandidate.CompleteLinkage,
+                TestClusterCandidate.DistanceFunction,
                 TestClusterCandidate.ToClusterSets(new[] {500, 603}, new[] {5, 4})
             };
 
@@ -97,6 +109,7 @@ namespace agnes.tests
                 TestClusterCandidate.ToTestList(5, 500, 4, 603, 5000),
                 200,
                 TestClusterCandidate.CompleteLinkage,
+                TestClusterCandidate.DistanceFunction,
                 TestClusterCandidate.ToClusterSets(new[] {500, 603}, new[] {5, 4}, new[] {5000})
             };
 
@@ -105,6 +118,7 @@ namespace agnes.tests
                 TestClusterCandidate.ToTestList(5, 500, 501, 430, 4, 603, 5000),
                 200,
                 TestClusterCandidate.CompleteLinkage,
+                TestClusterCandidate.DistanceFunction,
                 TestClusterCandidate.ToClusterSets(new[] {500, 603, 501, 430}, new[] {5, 4}, new[] {5000})
             };
 
@@ -113,15 +127,8 @@ namespace agnes.tests
                 TestClusterCandidate.ToTestList(1, 2, 3, 4, 5, 6, 7),
                 200,
                 TestClusterCandidate.CompleteLinkage,
+                TestClusterCandidate.DistanceFunction,
                 TestClusterCandidate.ToClusterSets(new[] {1, 2, 3, 4, 5, 6, 7})
-            };
-
-            yield return new object[]
-            {
-                TestClusterCandidate.ToTestList(700, 499, 20, 501, 10, 710),
-                200,
-                TestClusterCandidate.SingleLinkage,
-                TestClusterCandidate.ToClusterSets(new[] {10, 20}, new[] {499, 501, 700, 710})
             };
         }
 

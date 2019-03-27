@@ -9,8 +9,9 @@ namespace agnes.HCA
     {
         private readonly Cluster<T> _left;
         private readonly Cluster<T> _right;
-        private readonly T _instance;
-
+        
+        public readonly T Instance;
+        public readonly int Id;
         public readonly double Distance;
 
         public static Cluster<T> Empty() => new Cluster<T>();
@@ -19,33 +20,34 @@ namespace agnes.HCA
         {
             get
             {
-                if (_left == null && _right == null && _instance == null) return new List<T>();
-                if (_left == null && _right == null) return new List<T> {_instance};
+                if (_left == null && _right == null && Instance == null) return new List<T>();
+                if (_left == null && _right == null) return new List<T> {Instance};
 
                 var leftContents = _left?.Contents ?? new List<T>();
                 var rightContents = _right?.Contents ?? new List<T>();
                 
-                return leftContents.Concat(rightContents).ToArray();
+                return leftContents.Concat(rightContents);
             }
         }
 
-        private Cluster() : this(null, null, 0, default(T))
+        private Cluster() : this(null, null, 0, default(T), 0)
         {
 
         }
 
-        public Cluster(Cluster<T> left, Cluster<T> right, double distance)
-            : this(left, right, distance, default(T))
+        public Cluster(Cluster<T> left, Cluster<T> right, double distance, int id)
+            : this(left, right, distance, default(T), id)
         {
             
         }
 
-        public Cluster(Cluster<T> left, Cluster<T> right, double distance, T instance)
+        public Cluster(Cluster<T> left, Cluster<T> right, double distance, T instance, int id)
         {
             _left = left;
             _right = right;
-            _instance = instance;
+            Instance = instance;
             Distance = distance;
+            Id = id;
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -58,13 +60,13 @@ namespace agnes.HCA
             return GetEnumerator();
         }
 
-        public bool IsMerged => _left != null && _right != null && _instance == null;
+        public bool IsMerged => _left != null && _right != null && Instance == null;
 
         public bool ImmediatelyContains(Cluster<T> cluster) => cluster == _left || cluster == _right;
 
         public ISet<ISet<T>> GetClusteredInstances(Func<double, bool> predicate)
         {
-            if (!IsMerged) return new HashSet<ISet<T>> {new HashSet<T> {_instance}};
+            if (!IsMerged) return new HashSet<ISet<T>> {new HashSet<T> {Instance}};
 
             var left = _left.GetClusteredInstances(predicate);
             var right = _right.GetClusteredInstances(predicate);

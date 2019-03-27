@@ -12,28 +12,30 @@ namespace agnes.HCA
 
     public class HierarchicalClustering<T> : IAnalyseClusters<T>
     {
-        private readonly DistanceMatrixCalculator<T> _distanceMatrixCalculator;
+        private readonly Func<double, double, double> _linkageFunction;
+        private readonly Func<T, T, double> _distanceFunction;
 
-        public HierarchicalClustering(Func<Cluster<T>, Cluster<T>, double> linkageFunction)
+        public HierarchicalClustering(Func<T, T, double> distanceFunction, Func<double, double, double> linkageFunction)
         {
-            _distanceMatrixCalculator = new DistanceMatrixCalculator<T>(linkageFunction);
+            _distanceFunction = distanceFunction;
+            _linkageFunction = linkageFunction;
         }
 
         public Cluster<T> Cluster(IEnumerable<T> candidates)
         {
             if(candidates == null) return Cluster<T>.Empty();
 
-            var clusters = candidates.Select(c => new Cluster<T>(null, null, 0, c)).ToArray();
+            var clusters = candidates.Select((c,i) => new Cluster<T>(null, null, 0, c, (ushort)i)).ToArray();
 
             if (clusters.Length <= 1) return clusters.SingleOrDefault() ?? Cluster<T>.Empty();
 
+            // 1. construct distance matrix for clusters
+            ConstructDistanceMatrix(clusters);
+
             do
             {
-                // 1. construct distance matrix for clusters
-                var distanceMatrix = _distanceMatrixCalculator.Calculate(clusters);
-
-                // 2. find 2 clusters with the smallest distance
-                var minClusterPair = FindNearestClusters(clusters, distanceMatrix);
+                // 2. find 2 clusters with the smallest distance, and update the distance matrix
+                var minClusterPair = FindNearestClusters(clusters);
 
                 // 3. merge the 2 clusters, remove the two merged clusters from the list and append the merged cluster
                 clusters = clusters
@@ -48,25 +50,91 @@ namespace agnes.HCA
             return clusters.Single();
         }
 
-        private static Cluster<T> FindNearestClusters(Cluster<T>[] clusters, double[,] distanceMatrix)
+        private Cluster<T> FindNearestClusters(Cluster<T>[] clusters)
         {
-            Cluster<T> minClusterPair = null;
+            Cluster<T> minClusterLeft = null;
+            Cluster<T> minClusterRight = null;
+            var minXIndex = int.MaxValue;
+            var minYIndex = int.MaxValue;
             var minDistance = double.MaxValue;
 
             void DifferentIndexAction(int xIndex, int yIndex)
             {
-                var distance = distanceMatrix[xIndex, yIndex];
-                if (distance < minDistance)
-                {
-                    minClusterPair = new Cluster<T>(clusters[xIndex], clusters[yIndex], distance);
-                    minDistance = distance;
-                }
+                var distance = _distanceMatrix[clusters[xIndex].Id, clusters[yIndex].Id];
+                
+                if (distance >= minDistance) return;
+
+                minClusterLeft = clusters[xIndex];
+                minClusterRight = clusters[yIndex];
+                minXIndex = xIndex;
+                minYIndex = yIndex;
+                minDistance = distance;
 
             }
 
-            ReflectiveMatrix.Iterate((x, y) => { }, DifferentIndexAction, clusters.Length);
+            ReflectiveMatrix.Iterate(null, DifferentIndexAction, clusters.Length);
 
-            return minClusterPair;
+            var minCluster = new Cluster<T>(minClusterLeft, minClusterRight, minDistance, minClusterLeft.Id);
+            UpdateDistanceMatrix(clusters, minXIndex, minYIndex, minCluster);
+
+            return minCluster;
+        }
+
+        private double[,] _distanceMatrix;
+
+        private void ConstructDistanceMatrix(Cluster<T>[] clusters)
+        {
+            _distanceMatrix = new double[clusters.Length,clusters.Length];
+
+            void DifferentIndexAction(int xIndex, int yIndex)
+            {
+                var distance = _distanceFunction(clusters[xIndex].Instance, clusters[yIndex].Instance);
+                _distanceMatrix[clusters[xIndex].Id, clusters[yIndex].Id] = distance;
+                _distanceMatrix[clusters[yIndex].Id, clusters[xIndex].Id] = distance;
+            }
+
+            void SameIndexAction(int xIndex, int yIndex)
+            {
+                _distanceMatrix[clusters[xIndex].Id, clusters[yIndex].Id] = 0;
+            }
+
+            ReflectiveMatrix.Iterate(SameIndexAction, DifferentIndexAction, clusters.Length);
+
+        }
+
+        private void UpdateDistanceMatrix(Cluster<T>[] clusters, int minXIndex, int minYIndex, Cluster<T> minCluster)
+        {
+            // add new row and column for the merged cluster
+            // distance is the max (linkage function) of the distances between each element of the merged cluster
+            // and each of the remaining elements
+
+            var minXCluster = clusters[minXIndex];
+            var minYCluster = clusters[minYIndex];
+
+            for (var index = 0; index < clusters.Length; index++)
+            {
+                if(index == minXIndex || index == minYIndex) continue;
+
+                var distanceBetweenMinXAndIndex = _distanceMatrix[minXCluster.Id, clusters[index].Id];
+                var distanceBetweenMinYAndIndex = _distanceMatrix[minYCluster.Id, clusters[index].Id];
+
+                var distance = _linkageFunction(distanceBetweenMinXAndIndex, distanceBetweenMinYAndIndex);
+                _distanceMatrix[minCluster.Id, clusters[index].Id] = distance;
+                _distanceMatrix[clusters[index].Id, minCluster.Id] = distance;
+            }
+        }
+    }
+
+    public class IntEqualityComparer : IEqualityComparer<int>
+    {
+        public bool Equals(int x, int y)
+        {
+            return x == y;
+        }
+
+        public int GetHashCode(int obj)
+        {
+            return obj;
         }
     }
 }
