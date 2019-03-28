@@ -31,7 +31,7 @@ namespace agnes.tests
                 Math.Max);
 
             var clusters = clusterAnalyser.Cluster(releaseInfos);
-            var instances = clusters.GetClusteredInstances(d => d > 200).OrderByDescending(c => c.Count).ToArray();
+            var instances = clusters.GetClusteredInstances(d => d > 200 * 1024 * 1024).OrderByDescending(c => c.Count).ToArray();
         }
     }
 
