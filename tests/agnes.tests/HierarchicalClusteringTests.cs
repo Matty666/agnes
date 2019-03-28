@@ -70,6 +70,24 @@ namespace agnes.tests
         {
             yield return new object[]
             {
+                TestClusterCandidate.ToTestList(2,4,7,11),
+                4,
+                TestClusterCandidate.CompleteLinkage,
+                TestClusterCandidate.DistanceFunction,
+                TestClusterCandidate.ToClusterSets(new[] {2,4}, new []{7,11})
+            };
+
+            yield return new object[]
+            {
+                TestClusterCandidate.ToTestList(2,4,7,10),
+                3,
+                TestClusterCandidate.CompleteLinkage,
+                TestClusterCandidate.DistanceFunction,
+                TestClusterCandidate.ToClusterSets(new[] {2,4}, new[] {7,10})
+            };
+
+            yield return new object[]
+            {
                 TestClusterCandidate.ToTestList(700, 499, 20, 501, 10, 710),
                 200,
                 TestClusterCandidate.SingleLinkage,
