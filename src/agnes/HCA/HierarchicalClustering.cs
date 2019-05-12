@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using agnes.Utils;
 
 namespace agnes.HCA
 {
@@ -10,7 +9,7 @@ namespace agnes.HCA
         Cluster<T> Cluster(IEnumerable<T> candidates);
     }
 
-    public class HierarchicalClustering<T> : IAnalyseClusters<T>
+    public sealed class HierarchicalClustering<T> : IAnalyseClusters<T>
     {
         private readonly Func<double, double, double> _linkageFunction;
         private readonly Func<T, T, double> _distanceFunction;
@@ -72,7 +71,7 @@ namespace agnes.HCA
 
             }
 
-            ReflectiveMatrix.Iterate(null, DifferentIndexAction, clusters.Length);
+            ReflectiveMatrixIterate(null, DifferentIndexAction, clusters.Length);
 
             var minCluster = new Cluster<T>(minClusterLeft, minClusterRight, minDistance, minClusterLeft.Id);
             UpdateDistanceMatrix(clusters, minXIndex, minYIndex, minCluster);
@@ -98,13 +97,14 @@ namespace agnes.HCA
                 _distanceMatrix[clusters[xIndex].Id, clusters[yIndex].Id] = 0;
             }
 
-            ReflectiveMatrix.Iterate(SameIndexAction, DifferentIndexAction, clusters.Length);
+            ReflectiveMatrixIterate(SameIndexAction, DifferentIndexAction, clusters.Length);
 
         }
 
         private void UpdateDistanceMatrix(Cluster<T>[] clusters, int minXIndex, int minYIndex, Cluster<T> minCluster)
         {
-            // add new row and column for the merged cluster
+            // add new row and column for the merged cluster (which is actually re-using a row/column in the matrix
+            // for one of the merged clusters)
             // distance is the max (linkage function) of the distances between each element of the merged cluster
             // and each of the remaining elements
 
@@ -123,18 +123,25 @@ namespace agnes.HCA
                 _distanceMatrix[clusters[index].Id, minCluster.Id] = distance;
             }
         }
-    }
 
-    public class IntEqualityComparer : IEqualityComparer<int>
-    {
-        public bool Equals(int x, int y)
+        private static void ReflectiveMatrixIterate(Action<int, int> sameIndexAction, Action<int, int> differentIndexAction, int max)
         {
-            return x == y;
-        }
+            var xIndex = 0;
+            var yIndex = 0;
 
-        public int GetHashCode(int obj)
-        {
-            return obj;
+            while (yIndex < max)
+            {
+                if (xIndex == yIndex)
+                {
+                    sameIndexAction?.Invoke(xIndex, yIndex);
+                    xIndex = 0;
+                    yIndex += 1;
+                    continue;
+                }
+
+                differentIndexAction(xIndex, yIndex);
+                xIndex += 1;
+            }
         }
     }
 }

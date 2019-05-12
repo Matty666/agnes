@@ -2,7 +2,7 @@
 
 namespace agnes.ClusterSet
 {
-    public class ClusterGroupComparer<T> : IComparer<ClusterGroup<T>>
+    public sealed class ClusterGroupComparer<T> : IComparer<ClusterGroup<T>>
     {
         public static readonly ClusterGroupComparer<T> Instance = new ClusterGroupComparer<T>();
 

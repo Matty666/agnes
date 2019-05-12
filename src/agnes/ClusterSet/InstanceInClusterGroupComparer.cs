@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace agnes.ClusterSet
 {
-    public class InstanceInClusterGroupComparer<T> : IComparer<T>
+    public sealed class InstanceInClusterGroupComparer<T> : IComparer<T>
         where T : IEquatable<T>
     {
         private readonly IEnumerable<ClusterGroup<T>> _clusters;
