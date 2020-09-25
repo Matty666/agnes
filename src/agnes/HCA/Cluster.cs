@@ -78,5 +78,10 @@ namespace agnes.HCA
 
             return new HashSet<ISet<T>>{ new HashSet<T>(left.SelectMany(s => s).Concat(right.SelectMany(s => s)))};
         }
+
+        public ISet<ISet<T>> GetClusteredInstances(double cutPoint)
+        {
+            return GetClusteredInstances(d => d > cutPoint);
+        }
     }
 }
