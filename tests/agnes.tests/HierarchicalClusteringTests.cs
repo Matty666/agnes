@@ -61,6 +61,20 @@ namespace agnes.tests
 
             count.ShouldBe(expectedClusterResults.Count);
         }
+
+        [Fact]
+        public void ShouldClusterValueTypes()
+        {
+            var source = new List<int> { 101, 204, 203, 105, 103 };
+            var expectedSets = new HashSet<HashSet<int>>{new HashSet<int>{204,105}, new HashSet<int>{101,203,103}};
+            double DistanceValueSelector(int c) => c % 100;
+            double DistanceFunction(int a, int b) => Math.Abs(DistanceValueSelector(a) - DistanceValueSelector(b));
+            var subject = new HierarchicalClustering<int>(DistanceFunction, TestClusterCandidate.CompleteLinkage);
+            var results = subject.Cluster(source);
+            var clusters = results.GetClusteredInstances(2);
+            clusters.Count.ShouldBe(2);
+            clusters.ShouldBe(expectedSets);
+        }
     }
 
     public class ClusteringTestData : IEnumerable<object[]>
